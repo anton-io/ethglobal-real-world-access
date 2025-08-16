@@ -41,7 +41,7 @@ def example():
         "sig2": "0x8169b59a86b3b752a858d14b05c2751679b50d925d23b835ad63cee7352b65ae310dac6268266e5aabb1e7b52164ce95bbccebc10a1490d36563a9ba8f61081b1b"
     }
     if signature_check(data):
-        print("Success!")
+        print("Success! Signatures are both valid!")
 
 
 if __name__ == "__main__":

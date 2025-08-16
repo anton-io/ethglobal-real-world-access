@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RWAccess QR Validator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      box-sizing: border-box;
+    }
+
+    #video {
+      width: 100%;
+      max-width: 500px;
+      aspect-ratio: 16 / 9; /* Enforce 16:9 aspect ratio */
+      border: 1px solid #ccc;
+      object-fit: cover; /* Ensure video fills the container */
+      border-radius: 8px; /* Optional: slight rounding for aesthetics */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow for polish */
+    }
+
+    #result {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+
+    #canvas {
+      display: none; /* Hidden canvas for QR processing */
+    }
+
+    @media (max-width: 600px) {
+      #video {
+        width: 90%; /* Slightly smaller on mobile for padding */
+        max-width: 400px; /* Prevent overly large video on small screens */
+      }
+    }
+  </style>
+</head>
+<body>
+<h1>Real Word Access <br> QR Validator</h1>
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas"></canvas>
+<div id="result"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.14.3/dist/ethers.umd.min.js"></script>
+
+<script>
+  const ADDR_OWNER = "0x8163a3415402B498c7441D0D19DDe724E104Ab82";
+  const video = document.getElementById("video");
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d", {willReadFrequently: true});
+  const resultDiv = document.getElementById("result");
+
+  async function startCamera() {
+    try {
+      const constraints = {
+        video: {
+          facingMode: "environment",
+          width: {ideal: 1280},
+          height: {ideal: 720}
+        }
+      };
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      video.srcObject = stream;
+      video.onloadedmetadata = () => {
+        video.play();
+        scanQRCode();
+      };
+    } catch (err) {
+      resultDiv.textContent = `Error accessing camera: ${err.message}. Please ensure camera permissions are granted.`;
+      resultDiv.style.color = "red";
+    }
+  }
+
+  function scanQRCode() {
+    if (!video.videoWidth || !video.videoHeight) {
+      requestAnimationFrame(scanQRCode);
+      return;
+    }
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height);
+    if (code) {
+      try {
+        const d = JSON.parse(code.data);
+        const {user, tstart, tend, ens, sig1, sig2} = d;
+        if (!user || !tstart || !tend || !ens || !sig1 || !sig2) {
+          throw new Error("QR code is invalid.");
+        }
+        validateAccess(d);
+        return;
+      } catch (err) {
+        resultDiv.textContent = `Error parsing QR code data: ${err.message}`;
+        resultDiv.style.color = "red";
+      }
+    }
+    requestAnimationFrame(scanQRCode);
+  }
+
+  async function validateSignature(abiEncoded, signature, addrExpected)
+  {
+    const hashed = ethers.keccak256(abiEncoded);
+    const bytesConverter = ethers.getBytes || ethers.utils.arrayify;
+    const recoveredAddress = await ethers.verifyMessage(bytesConverter(hashed), signature);
+    if (recoveredAddress.toLowerCase() === addrExpected.toLowerCase()) {
+      return true
+    } else {
+      return false
+    }
+  }
+
+  async function validateAccess(d) {
+    try {
+      const abiCoder = new ethers.AbiCoder();
+      const abiEncoded1 = abiCoder.encode(
+          ["address", "uint64", "uint64", "string"],
+          [d.user, d.tstart, d.tend, d.ens]
+      );
+      const abiEncoded2 = abiCoder.encode(
+          ["address", "uint64", "uint64", "string", "string"],
+          [d.user, d.tstart, d.tend, d.ens, d.sig1]
+      );
+      if(
+        await validateSignature(abiEncoded1, d.sig1, ADDR_OWNER) &&
+        await validateSignature(abiEncoded2, d.sig2, d.user)
+      ) {
+        resultDiv.innerHTML = "🎉 Valid!!<br> Access Granted!<br>"+d.ens;
+        resultDiv.style.color = "green";
+      } else {
+        resultDiv.innerHTML = "❌ Invalid. <br>Access Denied.<br>"+d.ens;
+        resultDiv.style.color = "red";
+      }
+    } catch (err) {
+      resultDiv.textContent = `Error verifying signature: ${err.message}`;
+      resultDiv.style.color = "red";
+    }
+  }
+
+  window.onload = startCamera;
+</script>
+</body>
+</html>

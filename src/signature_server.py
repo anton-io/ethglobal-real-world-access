@@ -9,19 +9,19 @@ CONTRACT_ABI = [
     {
         "anonymous": False,
         "inputs": [
-            {"indexed": True, "internalType": "bytes32", "name": "bookingId", "type": "bytes32"},
+            {"indexed": True, "internalType": "bytes32", "name": "accessId", "type": "bytes32"},
             {"indexed": True, "internalType": "address", "name": "user", "type": "address"},
             {"internalType": "uint64", "name": "tstart", "type": "uint64"},
             {"internalType": "uint64", "name": "tend", "type": "uint64"},
             {"internalType": "string", "name": "ens", "type": "string"},
             {"internalType": "bytes", "name": "signature", "type": "bytes"}
         ],
-        "name": "BookingCreated",
+        "name": "AccessCreated",
         "type": "event"
     },
     {
         "inputs": [
-            {"internalType": "bytes32", "name": "bookingId", "type": "bytes32"},
+            {"internalType": "bytes32", "name": "accessId", "type": "bytes32"},
             {"internalType": "bytes", "name": "signature", "type": "bytes"}
         ],
         "name": "fulfillSignature",
@@ -75,13 +75,13 @@ def handle_event(event):
     try:
         # Extract event data
         event_data = {
-            "bookingId": event["args"]["bookingId"],
+            "accessId": event["args"]["accessId"],
             "user": event["args"]["user"],
             "tstart": event["args"]["tstart"],
             "tend": event["args"]["tend"],
             "ens": event["args"]["ens"]
         }
-        print(f"New BookingCreated event: {event_data}")
+        print(f"New AccessCreated event: {event_data}")
 
         # Create signature for the data
         data_to_sign = {
@@ -94,7 +94,7 @@ def handle_event(event):
         print(f"Generated signature: {signature}")
 
         # Call fulfillSignature
-        call_fulfill_signature(event_data["bookingId"], signature)
+        call_fulfill_signature(event_data["accessId"], signature)
 
     except Exception as e:
         print(f"Error processing event: {e}")
@@ -102,8 +102,8 @@ def handle_event(event):
 
 # Main function to listen for events
 def listen_for_events():
-    print("Listening for BookingCreated events...")
-    event_filter = contract.events.BookingCreated.create_filter(fromBlock="latest")
+    print("Listening for AccessCreated events...")
+    event_filter = contract.events.AccessCreated.create_filter(fromBlock="latest")
 
     while True:
         try:
