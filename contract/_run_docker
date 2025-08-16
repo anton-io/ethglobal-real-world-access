@@ -1,0 +1,11 @@
+# Run docker with node:
+docker run -ti --name rwaccess -v `pwd`:/app node:24-alpine3.21  /bin/sh
+
+# Setup and install dependencies:
+alias dir=ls
+cd /app
+npm install --save-dev hardhat @nomicfoundation/hardhat-toolbox
+
+# Run smart contract compilation and tests.
+npx hardhat compile
+npx hardhat test
