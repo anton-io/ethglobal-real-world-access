@@ -87,15 +87,15 @@ npx hardhat test
 
 In this test: 0) a mock stablecoin is deployed; 1) a payment is made to request access; 2/3) this is validated and signed; 4) and finally the user is provided with the data it needs to 5) generate a valid QR code.
 
-![RWAccess flow diagram](rwaccess.png "RWAccess flow diagram")
+<img src="./rwaccess.png" alt="RWAccess flow diagram" width="auto" height="300">
 
 An example for generating such QR codes is available inside __./src/signature_user.py__. 
 
-![RWAccess QR Code](./src/qr_keypass.png "RWAccess Example QR Code").
+<img src="./src/qr_keypass.png" alt="RWAccess Example QR Code" width="300" height="auto">
 
 Finally, inside __./web__ there is an example validator that can use any camera to validate the QR and deny or allow access. Ideally, a similar code would be running on an embedded device that gates access to a specific service/product (_e.g._ gym door, hotel room, etc.).
 
-![RWAccess Validator APP](./web/qr_validator.png "RWAccess Validator APP").
+<img src="./web/qr_validator.png" alt="RWAccess Validator APP" width="300" height="auto">
 
 
 ## Trade-offs
