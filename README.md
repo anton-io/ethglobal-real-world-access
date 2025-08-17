@@ -75,6 +75,29 @@ Zircuit is an Ethereum Layer 2 zk-rollup blockchain leveraging AI-driven securit
 4. **QR Code Generation**: The final signed message with the user's signature is encoded into an access QR code.
 5. **Access Verification**: The access grantor scans the QR code, verifies the signatures (one for the validator, and another from the user), and grants access if valid and within the time window.
 
+## How To Use?
+
+A comprehensive test can be run using hardhat with the following commands:
+
+```
+cd ./contract
+npx hardhat compile
+npx hardhat test
+```
+
+In this test: 0) a mock stablecoin is deployed; 1) a payment is made to request access; 2/3) this is validated and signed; 4) and finally the user is provided with the data it needs to 5) generate a valid QR code.
+
+![RWAccess flow diagram](rwaccess.png "RWAccess flow diagram")
+
+An example for generating such QR codes is available inside __./src/signature_user.py__. 
+
+![RWAccess QR Code](./src/qr_keypass.png "RWAccess Example QR Code").
+
+Finally, inside __./web__ there is an example validator that can use any camera to validate the QR and deny or allow access. Ideally, a similar code would be running on an embedded device that gates access to a specific service/product (_e.g._ gym door, hotel room, etc.).
+
+![RWAccess Validator APP](./web/qr_validator.png "RWAccess Validator APP").
+
+
 ## Trade-offs
 
 To ensure simplicity and offline compatibility, RWAccess prioritizes minimal dependencies, which limits features including:
