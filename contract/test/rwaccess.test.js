@@ -19,11 +19,15 @@ describe("RWAccess", function () {
     console.log("User address:", user.address);
 
     // Deploy mock PYUSD.
+    console.log("Deploying MockUSD");
     const MockPYUSD = await ethers.getContractFactory("MockPYUSD", owner);
     pyusd = await MockPYUSD.deploy(ethers.parseUnits("1000000", 6)); // 1M mPYUSD to deployer.
     await pyusd.waitForDeployment();
+    console.log("Deployed MockUSD at", await pyusd.getAddress());
+
 
     // Deploy RWAccess.
+    console.log("Deploying RWAccess contract.");
     const RWAccess = await ethers.getContractFactory("RWAccess", owner);
     rwaccess = await RWAccess.deploy(
       await pyusd.getAddress(),
@@ -31,9 +35,12 @@ describe("RWAccess", function () {
       "room123.hotel.eth"
     );
     await rwaccess.waitForDeployment();
+    console.log("Deployed RWAccess at", await rwaccess.getAddress());
+
 
     // Give user PYUSD.
     await pyusd.transfer(user.address, ethers.parseUnits("1000", 6));
+    console.log("Transfered USD ", ethers.parseUnits("1000", 6),  " to user ", user.address);
   });
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
@@ -45,13 +52,16 @@ const { ethers } = require("hardhat");
 
     // Approve payment.
     const cost = BigInt(tend - tstart) * 1000n; // pricePerSecond=1000.
+    console.log("Approving RWAaccess to spend user's USD");
     await pyusd.connect(user).approve(await rwaccess.getAddress(), cost);
 
     // Pay for new access.
+    console.log(`Paying for Access from ${tstart} to ${tend}`);
     const tx = await rwaccess.connect(user).pay(tstart, tend);
     const receipt = await tx.wait();
 
     // Parse AccessCreated event
+    console.log(`Signer waiting for AccessCreated event`);
     const accessCreatedLog = receipt.logs
       .map(log => {
         try {
@@ -63,11 +73,12 @@ const { ethers } = require("hardhat");
       .find(parsed => parsed && parsed.name === "AccessCreated");
 
     expect(accessCreatedLog).to.not.be.null;
-    console.log("AccessCreated:", accessCreatedLog.args);
+    console.log(`AccessCreated event created: ${accessCreatedLog.args}`);
 
     const accessId = accessCreatedLog.args.accessId;
 
     // Try overlapping access (should fail).
+    console.log(`Check overlapping access cannot be created`);
     await pyusd.connect(user).approve(await rwaccess.getAddress(), cost);
     await expect(
       rwaccess.connect(user).pay(tstart + 1800, tend + 1800)
@@ -75,6 +86,7 @@ const { ethers } = require("hardhat");
 
     // Fulfill signature (simulate external signer).
     // ABI-encode the event data and sign it.
+    console.log(`Signer creating transaction to sign/validate access.`);
 
     const abiCoder = new ethers.AbiCoder();
     const abi_encoded = abiCoder.encode(
@@ -86,18 +98,17 @@ const { ethers } = require("hardhat");
           accessCreatedLog.args.ens
         ]
     );
-    console.log("abi encoded:", abi_encoded);
 
     const hashed = ethers.keccak256(abi_encoded);
     console.log("Keccak:", hashed);
-
     const bytesConverter = ethers.getBytes || ethers.utils.arrayify;
     const signed = await owner.signMessage(bytesConverter(hashed));
-    console.log("signed:", signed);
+    console.log("Access validated and signed: ", signed);
 
     const tx2 = await rwaccess.connect(owner).fulfillSignature(accessId, signed);
     const receipt2 = await tx2.wait();
 
+    console.log("Expecting AccessSigned event.");
     // Parse AccessSigned event
     const accessSignedLog = receipt2.logs
       .map(log => {
@@ -110,7 +121,7 @@ const { ethers } = require("hardhat");
       .find(parsed => parsed && parsed.name === "AccessSigned");
 
     expect(accessSignedLog).to.not.be.null;
-    console.log("AccessSigned:", accessSignedLog.args);
+    console.log("AccessSigned event created:", accessSignedLog.args);
   });
 });
 
