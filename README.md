@@ -13,8 +13,9 @@ This project leverages a Solidity smart contract to manage access rights, powere
 * Zircuit Contract: [0x6aef6b0b33a4f99cdd4bac962700bf17b700b6b7](https://explorer.zircuit.com/address/0x6aef6b0b33a4f99cdd4bac962700bf17b700b6b7?activeTab=3)
 * Sepolia Contract: [0xaf2c722e2f2dd5bedbe7be08043604ce94a00240](https://sepolia.etherscan.io/address/0xaf2c722e2f2dd5bedbe7be08043604ce94a00240#code) 
 
-
 Both contracts have been deployed and verified.
+
+[Here](https://sepolia.etherscan.io/tx/0xa71d578ff7c29d8b7fea7e48f21477d54041202d3e2ea0e5e54b17b1d3fa328a) is also a transaction involving payment for an access using PYUSD on Sepolia.
 
 ## Overview
 
