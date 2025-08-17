@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("RWAcess", function () {
+describe("RWAccess", function () {
   let rwaccess;
   let owner, user;
 
@@ -23,9 +23,9 @@ describe("RWAcess", function () {
     pyusd = await MockPYUSD.deploy(ethers.parseUnits("1000000", 6)); // 1M mPYUSD to deployer.
     await pyusd.waitForDeployment();
 
-    // Deploy RWAcess.
-    const RWAcess = await ethers.getContractFactory("RWAcess", owner);
-    rwaccess = await RWAcess.deploy(
+    // Deploy RWAccess.
+    const RWAccess = await ethers.getContractFactory("RWAccess", owner);
+    rwaccess = await RWAccess.deploy(
       await pyusd.getAddress(),
       1000, // pricePerSecond = 0.001 PYUSD/sec.
       "room123.hotel.eth"

@@ -12,14 +12,14 @@ interface IERC20 {
 /// @title Real-World Access with PYUSD payments & external signature fulfillment.
 /// @author
 /// @notice Single-asset controller with ENS label, second-based pricing, and collision-safe accesses.
-contract RWAcess {
+contract RWAccess {
     // -------------------- Types --------------------
     struct Access {
         address user;
         uint64 tstart;
         uint64 tend;
-        bool signed;         // whether external signature has been populated.
-        bytes signature;     // off-chain signature payload (opaque blob).
+        bool signed;
+        bytes signature;
     }
 
     // -------------------- Events --------------------

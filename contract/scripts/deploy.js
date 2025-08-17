@@ -7,8 +7,8 @@ async function main() {
   const PYUSD = await MockPYUSD.deploy(hre.ethers.parseUnits("1000000", 6));
   await PYUSD.waitForDeployment();
 
-  const RWAcess = await hre.ethers.getContractFactory("RWAcess");
-  const rwaccess = await RWAcess.deploy(
+  const RWAccess = await hre.ethers.getContractFactory("RWAccess");
+  const rwaccess = await RWAccess.deploy(
     await PYUSD.getAddress(),
     1000, // pricePerSecond = 0.001 PYUSD/sec
     "room.hotel.eth"
@@ -16,7 +16,7 @@ async function main() {
   await rwaccess.waitForDeployment();
 
   console.log("PYUSD:", await PYUSD.getAddress());
-  console.log("RWAcess:", await rwaccess.getAddress());
+  console.log("RWAccess:", await rwaccess.getAddress());
 }
 
 main().catch((error) => {
