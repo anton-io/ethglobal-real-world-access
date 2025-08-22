@@ -1,21 +1,23 @@
 # RWAccess - Real World Access
 
-**RWAccess** is a Proof-of-Concept (PoC) demonstrating secure, decentralized access control for real-world assets using blockchain, cryptography, and QR codes. 
 
-By making a stablecoin payment to a smart contract, users receive a QR code that serves as a secure digital key. This key can replace or complement traditional access methods, such as hotel room keys, conference passes, gym memberships, or any system requiring gated access, offering a seamless and versatile solution.
+__RWAccess__ is a Proof-of-Concept (PoC) showcasing secure, decentralized access control for real-world assets using blockchain, cryptography, and QR codes.
 
-Access is granted via QR codes containing cryptographically signed messages, replacing traditional keys or passes.
+Instead of traditional keys or passes, users gain access through QR codes containing cryptographically signed messages. By making a stablecoin payment to a smart contract, the user receives a signed message which, when co-signed by the user, acts as a secure digital key.
 
-This innovative system has the potential to transform access control across industries, enabling secure, scalable, and seamless solutions for physical and digital assets.
+This system can replace or complement conventional access methods (hotel room keys, event passes, gym memberships, etc.), offering a seamless and versatile solution with strong cryptographic guarantees.
 
-This project leverages a Solidity smart contract to manage access rights, powered by __PayPal's PYUSD__ stablecoin, with __ENS__ names for user-friendly asset identification, and it's contract is deployed on __Zircuit__ and Sepolia Testnet at the following addresses:
+RWAccess uses:
 
-* Zircuit Contract: [0x6aef6b0b33a4f99cdd4bac962700bf17b700b6b7](https://explorer.zircuit.com/address/0x6aef6b0b33a4f99cdd4bac962700bf17b700b6b7?activeTab=3)
-* Sepolia Contract: [0xaf2c722e2f2dd5bedbe7be08043604ce94a00240](https://sepolia.etherscan.io/address/0xaf2c722e2f2dd5bedbe7be08043604ce94a00240#code) 
+* A Solidity smart contract to manage access rights.
+* PayPal USD (PYUSD) for stable, predictable payments.
+* ENS for human-readable asset identifiers.
+* Deployments on Zircuit and Sepolia Testnet:
+  * Zircuit Contract: [0x6aef6b0b33a4f99cdd4bac962700bf17b700b6b7](https://explorer.zircuit.com/address/0x6aef6b0b33a4f99cdd4bac962700bf17b700b6b7?activeTab=3)
+  * Sepolia Contract: [0xaf2c722e2f2dd5bedbe7be08043604ce94a00240](https://sepolia.etherscan.io/address/0xaf2c722e2f2dd5bedbe7be08043604ce94a00240#code) 
 
 Both contracts have been deployed and verified.
 
-[Here](https://sepolia.etherscan.io/tx/0xa71d578ff7c29d8b7fea7e48f21477d54041202d3e2ea0e5e54b17b1d3fa328a) is also a transaction involving payment for an access using PYUSD on Sepolia.
 
 ## Overview
 
@@ -23,14 +25,18 @@ RWAccess enables secure access to real-world assets (e.g., hotel rooms, vehicles
 
 Users pay for time-bound access using PYUSD, defined by `tstart` and `tend` in Unix time. After payment, a signature server validates and signs grants access-rights by signing the access request. This signed message, when combined with the user's signature is used to generate a QR code that can be used by any access verifier to grant or deny access.
 
+
 ### Key Features
+
 - **Solidity Smart Contract**: Manages access rights, ensuring no double-booking by tracking `tstart` and `tend`.
 - **PYUSD Payments**: Access is paid in PayPal's PYUSD stablecoin, with a configurable price-per-second set by the contract owner.
 - **ENS Integration**: Uses ENS names for human-readable, upgradable, and compact asset identification in QR codes, and enhanced security via asset address resolution.
 - **Signed QR Codes**: Act as key/pass with the following fields: `[addr, tstart, tend, ens, sig1, sig2]`.
 - **Offline Operation**: Designed for minimal dependencies, allowing requestors and grantors to operate without internet access.
 
+
 ## Applications
+
 RWAccess can replace or complement traditional access methods, such as:
 - **Physical Keys/Passes**: Hotel keycards, car keys, gym passes, plane tickets, or event badges.
 - **Advanced Use Cases**:
@@ -38,15 +44,16 @@ RWAccess can replace or complement traditional access methods, such as:
   - **Easy Recovery**: Recover lost access credentials via blockchain-based identity.
   - **Scalable Access**: Enable shared access for rentals, co-working spaces, or community resources.
 
+
 ## Why ENS?
 
 The Ethereum Name Service (ENS) simplifies blockchain interactions by mapping human-readable domain names, like example.eth, to Ethereum addresses, enhancing user experience and security for transactions and dApps.
-
 
 1. **Human-Readable**: Simplifies user experience with names like `room123.hotel.eth` instead of cryptic addresses. It can also easily point to which access it refers to, for example: `branchX.club.eth`, `license.car.eth`, `ticketX.concert.eth`, etc.
 1. **Security**: The ens can resolve to address that is expected as the owner (i.e. _sig1_ must resolve to that same address)
 1. **Compact QR Codes**: Reduces QR code density for better machine readability.
 1. **Transparent Upgrades**: Allows seamless updates to the coordinator address via ENS.
+
 
 ## Why PayPal USD?
 
@@ -69,11 +76,13 @@ Zircuit is an Ethereum Layer 2 zk-rollup blockchain leveraging AI-driven securit
 
 
 ## How It Works?
+
 1. **Access Setup**: A RWAccess contract is deployed with an ENS identifier and price per second.
 2. **Payment**: Users pay in PYUSD for access between `tstart` and `tend`. The contract validates availability and logs the booking.
 3. **Signed Message**: A structure `[user, tstart, tend, ens, sig1]` is logged (initially with an empty signature) and signed by a validator.
 4. **QR Code Generation**: The final signed message with the user's signature is encoded into an access QR code.
 5. **Access Verification**: The access grantor scans the QR code, verifies the signatures (one for the validator, and another from the user), and grants access if valid and within the time window.
+
 
 ## How To Use?
 
@@ -85,7 +94,7 @@ npx hardhat compile
 npx hardhat test
 ```
 
-In this test: 0) a mock stablecoin is deployed; 1) a payment is made to request access; 2/3) this is validated and signed; 4) and finally the user is provided with the data it needs to 5) generate a valid QR code.
+In this test: __0)__ a mock stablecoin is deployed and the user account funded; __1)__ a time window is selected and payment made to request access; __2/3)__ the request is validated and signed; __4)__ the user receives the required data; __5)__ a valid QR code is generated; and __6)__ the validator grants access if the QR code signatures are valid.
 
 <img src="./rwaccess.png" alt="RWAccess flow diagram" width="auto" height="300">
 

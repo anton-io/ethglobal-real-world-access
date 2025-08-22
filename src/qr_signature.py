@@ -35,19 +35,27 @@ def qr_read(fnf_qr='qr_keypass.png'):
 
     # Print the decoded data
     for obj in decoded_objects:
-        print("Decoded Data:", obj.data.decode("utf-8"))
-        print("Type:", obj.type)
+        print("Decoded Type:", obj.type)
+        print("Decoded Data:\n", json.dumps(json.loads(obj.data.decode("utf-8")), indent=2))
+        print()
+
     return obj.data.decode("utf-8")
 
+
 def example():
-    data_write = json.dumps({
+    data = {
         "user": "0x25a0fEC55dD7cc314A8Bb00e666489524b7d9cB9",
         "tstart": 1755555555,
         "tend": 1755559155,
-        "ens": "room123.hotel.eth",
+        "ens": "room124.hotel.eth",
         "sig1": "0x50b985ba21094dce584b288d2726ddaf185675c80f955df07d956784b0f97d8d18dae37032c182b3196e4bd4a41796ebb8719ec97f1fd525d12a76da60419ab51b",
         "sig2": "0x8169b59a86b3b752a858d14b05c2751679b50d925d23b835ad63cee7352b65ae310dac6268266e5aabb1e7b52164ce95bbccebc10a1490d36563a9ba8f61081b1b"
-    })
+    }
+    print('Generating QR Code for:')
+    print(json.dumps(data, indent=2))
+    print()
+
+    data_write = json.dumps(data)
     qr_generate(data_write)
 
     # Read generated QR code:
@@ -58,7 +66,6 @@ def example():
         print("info: success! (read == written)")
     else:
         print("error: written and read data is different!")
-
 
 
 if __name__ == "__main__":
